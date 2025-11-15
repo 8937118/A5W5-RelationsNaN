@@ -22,7 +22,8 @@ namespace RelationsNaN.Controllers
         // GET: Games
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Game.ToListAsync());
+            var relationsNaNContext = _context.Game.Include(g => g.Genre);
+            return View(await relationsNaNContext.ToListAsync());
         }
 
         // GET: Games/Details/5
@@ -34,6 +35,7 @@ namespace RelationsNaN.Controllers
             }
 
             var game = await _context.Game
+                .Include(g => g.Genre)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (game == null)
             {
@@ -46,6 +48,7 @@ namespace RelationsNaN.Controllers
         // GET: Games/Create
         public IActionResult Create()
         {
+            ViewData["GenreId"] = new SelectList(_context.Genre, "Id", "Name");
             return View();
         }
 
@@ -54,7 +57,7 @@ namespace RelationsNaN.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Image,ReleaseYear")] Game game)
+        public async Task<IActionResult> Create([Bind("Id,Name,Image,ReleaseYear,GenreId")] Game game)
         {
             if (ModelState.IsValid)
             {
@@ -62,6 +65,7 @@ namespace RelationsNaN.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["GenreId"] = new SelectList(_context.Genre, "Id", "Name", game.GenreId);
             return View(game);
         }
 
@@ -78,6 +82,7 @@ namespace RelationsNaN.Controllers
             {
                 return NotFound();
             }
+            ViewData["GenreId"] = new SelectList(_context.Genre, "Id", "Name", game.GenreId);
             return View(game);
         }
 
@@ -86,7 +91,7 @@ namespace RelationsNaN.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Image,ReleaseYear")] Game game)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Image,ReleaseYear,GenreId")] Game game)
         {
             if (id != game.Id)
             {
@@ -113,6 +118,7 @@ namespace RelationsNaN.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["GenreId"] = new SelectList(_context.Genre, "Id", "Name", game.GenreId);
             return View(game);
         }
 
@@ -125,6 +131,7 @@ namespace RelationsNaN.Controllers
             }
 
             var game = await _context.Game
+                .Include(g => g.Genre)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (game == null)
             {
